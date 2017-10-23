@@ -38,14 +38,15 @@ public class Controller {
     }
 
     @RequestMapping(value="/person", method = RequestMethod.POST)
-    public Person create(@RequestParam String name,
+    public void create(@RequestParam String name,
                          @RequestParam String alias,
                          @RequestParam String dob,
                          @RequestParam String facebook,
                          @RequestParam String associates,
                          @RequestParam String crimes,
                          @RequestParam String info,
-                         @RequestParam String pictureFilePath) {
+                         @RequestParam String pictureFilePath,
+                         HttpServletResponse httpServletResponse) throws IOException {
         Person person = new Person();
 
         person.setName(extractName(name));
@@ -75,7 +76,7 @@ public class Controller {
 
 //        person = personService.updatePerson(person);
 
-        return person;
+        httpServletResponse.sendRedirect("http://localhost:8888/");
     }
 
     @RequestMapping(value="/files/{filename:.+}", method = RequestMethod.GET)
