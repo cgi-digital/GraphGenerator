@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import com.google.gson.Gson;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,16 +16,20 @@ public class ImportRestService {
     private static List<RawPerson> persons = new CopyOnWriteArrayList<>();
 
     @PostMapping("/import-person")
-    public RawPerson importPersonJson(@RequestBody RawPerson person) {
-        person.fixPerson(importId.get());
+    public String importPersonJson(@RequestBody String myBody) {
+        System.out.println("Response recieved...");
+        Gson gson = new Gson();
+        RawPerson person = gson.fromJson(myBody, RawPerson.class);
         persons.add(importId.intValue(), person);
+        person.fixPerson(importId.get());
         importId.incrementAndGet();
-        return person;
+        return gson.toJson(person);
     }
 
     @GetMapping("/get-person/{id}")
-    public RawPerson getPerson(@PathVariable int id) {
-        return persons.get(id);
+    public String getPerson(@PathVariable int id) {
+        Gson gson = new Gson();
+        return gson.toJson(persons.get(id));
     }
 
 }

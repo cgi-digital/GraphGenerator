@@ -1,11 +1,188 @@
 var http = require('http'),
     fs = require('fs'),
     url = require('url'),
-    pdfUtil = require('pdf-to-raw');
+    pdfUtil = require('pdf-to-raw'),
+    formidable = require('formidable'),
+    request = require('request');
 
-var pdf_path = "/home/jamie/Documents/in.pdf";
+var file_path = "/tmp/";
+var file_name = "in-";
+var file_ext = ".pdf";
 var persons = [];
 var debug = false;
+var activeThreads = 0;
+var responseText = [];
+
+http.createServer(function (req, res) {
+    if (req.url == '/fileupload') {
+        var form = new formidable.IncomingForm();
+        var out = res;
+        form.parse(req, function (err, fields, files) {
+            console.log("File recieved");
+            pdfData = pdfUtil.pdfToRaw(files.filetoupload.path, function(err, data) {
+                if (err) throw(err);
+                console.log("Processing PDF file");
+                //Remove page and update information from the PDF
+                pdfData = data.split("\n");
+                data = "";
+                for(i = 0; i < pdfData.length; i++) {
+                    if(pdfData[i].indexOf("Page ") < 0)
+                        data = data + pdfData[i] + "\n";
+                }
+                // Split the data in to individuals
+                console.log("Processing PDF Data")
+                pdfDataArr = data.split("Name: ");
+                for(i = 1; i < pdfDataArr.length; i++) {
+                    rawPerson = "Name: " + pdfDataArr[i];
+                    personData = pdfDataProcessor(rawPerson);
+                    activeThreads++;
+                    request.post('http://localhost:8888/import-person', {json: true, body: personData}, function(err,res,body) {
+                            if(!err && res.statusCode === 200) {
+                                responseText.push("<p>Imported " + body.name + " with id : " + body.importId + "</p>");
+                            } else {
+                                responseText.push("<p>error: " + err + " with result status:" + res.statusCode + "</p>");
+                            }
+                            activeThreads--;
+                            pushResponse(out);
+                        });
+                    persons.push(personData);
+                }
+                fs.unlink(files.filetoupload.path, function() { return });
+            });
+        });
+    } else {
+        header = fs.readFileSync('template/header.html');
+        form = fs.readFileSync('template/uploadform.html');
+        footer = fs.readFileSync('template/footer.html');
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.write(header);
+        res.write(form);
+        res.write(footer);
+        return res.end();
+    }
+}).listen(8081);
+
+function pushResponse(res) {
+    if(activeThreads > 0)
+        return;
+    header = fs.readFileSync('template/header.html');
+    footer = fs.readFileSync('template/footer.html');
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(header);
+    res.write("<h1>Output Results</h1>");
+    for(i=0; i<responseText.length;i++){
+        res.write(responseText[i]);
+    }
+    res.write(footer);
+    res.end();
+    console.log("Done");
+}
+
+function pdfDataProcessor(rawData) {  
+    personData = {
+        name:"",
+        aka:"",
+        dob:"",
+        facebook:[],
+        knownAssociates:[],
+        associatedCrimes:[],
+        additionalInformation:""
+    }
+
+    
+    rawPersonArr = rawData.split("\n");
+
+    nameData = "";
+    dobData = "";
+    facebookData = [];
+    knownAssData = "";
+    assCrimesData = "";
+    addInfoData = "";
+
+    dataPositons = findDataPositions(rawPersonArr);
+
+    //Look for Name data
+    for(x = dataPositons.nameData.pos; x <= dataPositons.nameData.endPos; x++) {
+        nameData = nameData + rawPersonArr[x];
+    }
+    if(nameData.length > 0) {
+        if(nameData.split(": ").length > 1) {
+            nameData = nameData.split(": ")[1];
+            if(nameData.split("(").length > 1) {
+                personData.name = nameData.split("(")[0];
+                personData.aka = nameData.split("(")[1].substr(0, nameData.split("(")[1].length-1);
+            } else {
+                personData.name = nameData;
+            }
+        } else {
+            console.log("Error processing name data");
+            personData.name = nameData;
+        }
+    }
+
+    //Look for DOB data
+    for(x = dataPositons.dobData.pos; x <= dataPositons.dobData.endPos; x++) {
+        dobData = dobData + rawPersonArr[x];
+    }
+    if(dobData.length > 0) {
+        personData.dob = dobData.split(": ")[1];
+    }
+
+    //Look for Facebook Data
+    for(x = dataPositons.facebookData.pos; x <= dataPositons.facebookData.endPos; x++) {
+        facebookData.push(rawPersonArr[x]);
+    }
+    if(facebookData.length > 0) {
+        link0 = facebookData[0].split(": ")[1];
+        if(link0.split("(").length > 1) {
+            personData.facebook.push(
+                {
+                    link: link0.split("(")[0],
+                    status: link0.split("(")[1].substr(0, link0.split("(")[1].length-1)
+                }
+            );
+        } else {
+            personData.facebook.push({link: link0, status: null});
+        }
+        for(x = 1; x < facebookData.length; x++) {
+            if(facebookData[x].split("(").length > 1) {
+                personData.facebook.push({link: facebookData[x].split("(")[0], status: facebookData[x].split("(")[1].substr(0, facebookData[x].split("(")[1].length-1)});
+            } else {
+                personData.facebook.push({link: facebookData[x], status: null});
+            }
+        }
+    }
+
+    //Look for known associates Data
+    for(x = dataPositons.knownAssData.pos; x <= dataPositons.knownAssData.endPos; x++) {
+        knownAssData = knownAssData + rawPersonArr[x] + " ";
+    }
+    if(knownAssData.length > 0) {
+        if(knownAssData.split(": ").length > 1) {
+            
+            knownAssData = knownAssData.split(": ")[1];
+            personData.knowAssociates = parseAssociates(knownAssData);
+
+        }
+    }
+
+    // Look for Associated crimes data
+    for(x = dataPositons.assCrimesData.pos; x <= dataPositons.assCrimesData.endPos; x++) {
+        assCrimesData = assCrimesData + rawPersonArr[x]+"\n";
+    }
+    if(assCrimesData.length > 0) {
+        personData.associatedCrimes = assCrimesData;
+    }
+
+    // Look for Additional info
+    for(x = dataPositons.addInfoData.pos; x <= dataPositons.addInfoData.endPos; x++) {
+        addInfoData = addInfoData + rawPersonArr[x];
+    }
+    if(addInfoData.length > 0) {
+        personData.additionalInformation = addInfoData;
+    }
+    return personData;
+}
 
 function findDataPositions(rawPersonArr) {
     
@@ -165,134 +342,3 @@ function parseAssociates(associates) {
     return associateArray;
 }
 
-pdfUtil.pdfToRaw(pdf_path, function(err, data) {
-    if (err) throw(err);
-    
-    //Remove page and update information from the PDF
-    pdfData = data.split("\n");
-    data = "";
-    for(i = 0; i < pdfData.length; i++) {
-        if(pdfData[i].indexOf("Page ") < 0)
-            data = data + pdfData[i] + "\n";
-    }
-
-    // Split the data in to individuals
-    pdfData = data.split("Name: ");
-
-    for(i = 1; i < pdfData.length; i++) {
-        
-        personData = {
-            name:"",
-            aka:"",
-            dob:"",
-            facebook:[],
-            knownAssociates:[],
-            associatedCrimes:[],
-            additionalInformation:""
-        }
-
-        rawPerson = "Name: " + pdfData[i];
-        rawPersonArr = rawPerson.split("\n");
-
-        nameData = "";
-        dobData = "";
-        facebookData = [];
-        knownAssData = "";
-        assCrimesData = "";
-        addInfoData = "";
-
-        dataPositons = findDataPositions(rawPersonArr);
-
-        //Look for Name data
-        for(x = dataPositons.nameData.pos; x <= dataPositons.nameData.endPos; x++) {
-            nameData = nameData + rawPersonArr[x];
-        }
-        if(nameData.length > 0) {
-            if(nameData.split(": ").length > 1) {
-                nameData = nameData.split(": ")[1];
-                if(nameData.split("(").length > 1) {
-                    personData.name = nameData.split("(")[0];
-                    personData.aka = nameData.split("(")[1].substr(0, nameData.split("(")[1].length-1);
-                } else {
-                    personData.name = nameData;
-                }
-            } else {
-                console.log("Error processing name data");
-                personData.name = nameData;
-            }
-        }
-
-        //Look for DOB data
-        for(x = dataPositons.dobData.pos; x <= dataPositons.dobData.endPos; x++) {
-            dobData = dobData + rawPersonArr[x];
-        }
-        if(dobData.length > 0) {
-            personData.dob = dobData.split(": ")[1];
-        }
-
-        //Look for Facebook Data
-        for(x = dataPositons.facebookData.pos; x <= dataPositons.facebookData.endPos; x++) {
-            facebookData.push(rawPersonArr[x]);
-        }
-        if(facebookData.length > 0) {
-            link0 = facebookData[0].split(": ")[1];
-            if(link0.split("(").length > 1) {
-                personData.facebook.push(
-                    {
-                        link: link0.split("(")[0],
-                        status: link0.split("(")[1].substr(0, link0.split("(")[1].length-1)
-                    }
-                );
-            } else {
-                personData.facebook.push({link: link0, status: null});
-            }
-            for(x = 1; x < facebookData.length; x++) {
-                if(facebookData[x].split("(").length > 1) {
-                    personData.facebook.push({link: facebookData[x].split("(")[0], status: facebookData[x].split("(")[1].substr(0, facebookData[x].split("(")[1].length-1)});
-                } else {
-                    personData.facebook.push({link: facebookData[x], status: null});
-                }
-            }
-        }
-
-        //Look for known associates Data
-        for(x = dataPositons.knownAssData.pos; x <= dataPositons.knownAssData.endPos; x++) {
-            knownAssData = knownAssData + rawPersonArr[x] + " ";
-        }
-        if(knownAssData.length > 0) {
-            if(knownAssData.split(": ").length > 1) {
-                
-                knownAssData = knownAssData.split(": ")[1];
-                personData.knowAssociates = parseAssociates(knownAssData);
-
-            }
-        }
-
-        // Look for Associated crimes data
-        for(x = dataPositons.assCrimesData.pos; x <= dataPositons.assCrimesData.endPos; x++) {
-            assCrimesData = assCrimesData + rawPersonArr[x]+"\n";
-        }
-        if(assCrimesData.length > 0) {
-            personData.associatedCrimes = assCrimesData;
-        }
-
-        // Look for Additional info
-        for(x = dataPositons.addInfoData.pos; x <= dataPositons.addInfoData.endPos; x++) {
-            addInfoData = addInfoData + rawPersonArr[x];
-        }
-        if(addInfoData.length > 0) {
-            personData.additionalInformation = addInfoData;
-        }
-
-        var request = require('request');
-        request.post('http://localhost:8080/import-person', {json: true, body: personData}, function(err,res,body) {
-            if(!err && res.statusCode === 200) {
-                console.log("Imported " + body.name + " with id : " + body.importId);
-            } else {
-                console.log("error: " + err);
-                console.log("result status:" + res.statusCode);
-            }
-        });
-        persons.push(personData);
-    }
-});

@@ -12,8 +12,4 @@ class FacebookDetail {
         return this.status;
     }
 
-    @Override
-    String toString() {
-        return this.link + " (" + this.status + ")";
-    }
 }

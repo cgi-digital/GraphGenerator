@@ -51,8 +51,10 @@ public class RawPerson {
                 dateOfBirth = LocalDate.parse(dobString, formatter);
             }
         }
-        for(Associate associate : knownAssociates)
-            associate.fixAssociate();
+        if(knownAssociates.size() > 0) {
+            for(Associate associate : knownAssociates)
+                associate.fixAssociate();
+        }
     }
 
     private String findName(String name) {

@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages={"graphgenerator.*"})
 public class Application {
 
     public static void main(String[] args)
@@ -25,7 +25,5 @@ public class Application {
 //        GraphBuilder graphBuilder = (GraphBuilder) ApplicationContextProvider.getContext().getBean("graphBuilder");
         int x = 0;
     }
-
-
 
 }
