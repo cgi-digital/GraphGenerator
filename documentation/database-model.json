@@ -1,0 +1,288 @@
+// Liquibase JSON for creating the database
+{
+    "databaseChangeLog": [
+        {
+            "changeSet" : {
+                "id": 0,
+                "author": "jamie",
+                "changes": [
+                    {
+                        "createTable": {
+                            "tableName": "person",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "id",
+                                        "type": "bigint",
+                                        "autoIncrement": true,
+                                        "constraints": {
+                                            "primaryKey": true,
+                                            "nullable": false
+                                        }
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "original_name",
+                                        "type": "varchar(100)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "first_name",
+                                        "type": "varchar(60)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "family_name",
+                                        "type": "varchar(40)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "aka",
+                                        "type": "varchar(50)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "date_of_birth",
+                                        "type": "date"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "additional_information",
+                                        "type": "text"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "raw_crime_data",
+                                        "type": "text"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "associate_only",
+                                        "type": "boolean"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet" : {
+                "id": 1,
+                "author": "jamie",
+                "changes": [
+                    {
+                        "createTable": {
+                            "tableName": "JsonLog",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "id",
+                                        "type": "bigint",
+                                        "autoIncrement": true,
+                                        "constraints": {
+                                            "primaryKey": true,
+                                            "nullable": false
+                                        }
+                                    }
+                                },
+                                {
+                                    "column" : {
+                                        "name": "person_id",
+                                        "type": "bigint"
+                                    }
+                                },
+                                {
+                                    "column" : {
+                                        "name": "json",
+                                        "type": "text"
+                                    }
+                                },
+                                {
+                                    "column" : {
+                                        "name": "log_date",
+                                        "type": "timestamp"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": 2,
+                "author": "jamie",
+                "changes": [
+                    {
+                        "createTable": {
+                            "tableName" : "AssociatePerson",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "id",
+                                        "type": "bigint",
+                                        "autoIncrement": true,
+                                        "constraints": {
+                                            "primaryKey": true,
+                                            "nullable": false
+                                        }
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "person_id",
+                                        "type": "bigint"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "associated_person_id",
+                                        "type": "bigint"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "relationship",
+                                        "type": "varchar(50)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "relationship_type",
+                                        "type": "varchar(15)"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": 3,
+                "author": "jamie",
+                "changes": [
+                    {
+                        "createTable": {
+                            "tableName" : "Crime",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "id",
+                                        "type": "bigint",
+                                        "autoIncrement": true,
+                                        "constraints": {
+                                            "primaryKey": true,
+                                            "nullable": false
+                                        }
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "description",
+                                        "type": "text"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "date",
+                                        "type": "date"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "location",
+                                        "type": "varchar(50)"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": 4,
+                "author": "jamie",
+                "changes": [
+                    {
+                        "createTable": {
+                            "tableName" : "PersonCrime",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "person_id",
+                                        "type": "bigint"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "crime_id",
+                                        "type": "bigint"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": 5,
+                "author": "jamie",
+                "changes": [
+                    {
+                        "createTable": {
+                            "tableName" : "Facebook",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "id",
+                                        "type": "bigint",
+                                        "autoIncrement": true,
+                                        "constraints": {
+                                            "primaryKey": true,
+                                            "nullable": false
+                                        }
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "link",
+                                        "type": "varcahr(2083)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "status",
+                                        "type": "varchar(100)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "person_id",
+                                        "type": "bigint"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
