@@ -14,6 +14,7 @@ var activeThreads = 0;
 var responseText = [];
 
 http.createServer(function (req, res) {
+    console.log("HTTP Server Started")
     if (req.url == '/fileupload') {
         var form = new formidable.IncomingForm();
         var out = res;
@@ -76,6 +77,10 @@ function pushResponse(res) {
     res.write(footer);
     res.end();
     console.log("Done");
+    fs.writeFile("/tmp/out.json", JSON.stringify(persons, null, 4), function(err) {
+        if(err)
+            console.log(err);
+    })
 }
 
 function pdfDataProcessor(rawData) {  
@@ -85,7 +90,7 @@ function pdfDataProcessor(rawData) {
         dob:"",
         facebook:[],
         knownAssociates:[],
-        associatedCrimes:[],
+        rawAssociatedCrimes:"",
         additionalInformation:""
     }
 
@@ -161,17 +166,20 @@ function pdfDataProcessor(rawData) {
         if(knownAssData.split(": ").length > 1) {
             
             knownAssData = knownAssData.split(": ")[1];
-            personData.knowAssociates = parseAssociates(knownAssData);
+            personData.knownAssociates = parseAssociates(knownAssData);
 
         }
     }
 
     // Look for Associated crimes data
     for(x = dataPositons.assCrimesData.pos; x <= dataPositons.assCrimesData.endPos; x++) {
-        assCrimesData = assCrimesData + rawPersonArr[x]+"\n";
+        assCrimesData = assCrimesData + rawPersonArr[x] + " ";
     }
     if(assCrimesData.length > 0) {
-        personData.associatedCrimes = assCrimesData;
+        if(assCrimesData.split(": ").length > 1)
+            personData.rawAssociatedCrimes = assCrimesData.split(": ")[1];
+        else
+            personData.rawAssociatedCrimes = assCrimesData
     }
 
     // Look for Additional info
@@ -179,7 +187,10 @@ function pdfDataProcessor(rawData) {
         addInfoData = addInfoData + rawPersonArr[x];
     }
     if(addInfoData.length > 0) {
-        personData.additionalInformation = addInfoData;
+        if(addInfoData.split(": ").length > 1)
+            personData.additionalInformation = addInfoData.split(": ")[1];
+        else 
+            personData.additionalInformation = addInfoData;
     }
     return personData;
 }

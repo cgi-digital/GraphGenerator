@@ -14,7 +14,8 @@ public class RawPerson {
     private LocalDate dateOfBirth;
     private List<FacebookDetail> facebook;
     private List<Associate> knownAssociates;
-    private String associatedCrimes;
+    private String rawAssociatedCrimes;
+    private List<AssociatedCrime> associatedCrimes;
     private String additionalInformation;
     private long importId = -1;
 

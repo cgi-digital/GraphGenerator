@@ -2,6 +2,7 @@ package graphgenerator.pdfimport;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class SimplePersonList {
     
@@ -11,7 +12,7 @@ public class SimplePersonList {
         persons = new ArrayList<>();
     }
 
-    SimplePersonList(List<RawPerson> persons) {
+    SimplePersonList(Collection<RawPerson> persons) {
         this.persons = new ArrayList<>();
         for(RawPerson person : persons)
             this.persons.add(new SimplePerson(person.getId(), person.getName()));

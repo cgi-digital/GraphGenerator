@@ -8,40 +8,41 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.google.gson.Gson;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import com.google.gson.GsonBuilder;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @RestController
 public class ImportRestService {
-    private final AtomicLong importId = new AtomicLong();
-    private static List<RawPerson> persons = new CopyOnWriteArrayList<>();
+    private final AtomicLong currentId = new AtomicLong();
+    private static ConcurrentMap<Long, RawPerson> persons = new ConcurrentHashMap<>();
 
     @PostMapping("/import-person")
     public String importPersonJson(@RequestBody String personJson) {
         Gson gson = new Gson();
         RawPerson person = gson.fromJson(personJson, RawPerson.class);
-        persons.add(importId.intValue(), person);
-        person.fixPerson(importId.get());
-        importId.incrementAndGet();
+        Long importId = currentId.incrementAndGet();
+        persons.put(importId, person);
+        person.fixPerson(importId);
         return gson.toJson(person);
     }
 
     @GetMapping("/get-person/{id}")
-    public String getPerson(@PathVariable int id) {
-        Gson gson = new Gson();
+    public String getPerson(@PathVariable Long id) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(persons.get(id));
     }
 
     @DeleteMapping("/remove-person/{id}")
-    public String removePerson(@PathVariable int id) {
+    public String removePerson(@PathVariable long id) {
         this.persons.remove(id);
         return "Success";
     }
 
     @GetMapping("/get-all-person-ids")
     public String getAllPersons() {
-        Gson gson = new Gson();
-        SimplePersonList simplePersons = new SimplePersonList(persons);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        SimplePersonList simplePersons = new SimplePersonList(persons.values());
         return gson.toJson(simplePersons);
     }
 
