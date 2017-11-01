@@ -63,4 +63,12 @@ public class RawPerson {
         return name.substring(nameStartPostion, nameFinishPositon);
     }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public long getId() {
+        return this.importId;
+    }
+
 }
