@@ -3,9 +3,17 @@ package graphgenerator.pdfimport;
 public class Associate {
     private String name;
     private String relation = null;
-    private AssociateType type = AssociateType.OTHER;
+    private AssociateType type;
 
-    void fixAssociate() {
+    public Associate(String name) {
+        this.name = name;
+        this.type = AssociateType.OTHER;
+    }
+    
+    public Associate(String name, String relation) {
+        this.name = name;
+        this.relation = relation;
+
         if(relation != null && !relation.trim().isEmpty()) {
             if(relation.toLowerCase().contains("wife") || relation.toLowerCase().contains("husband") || relation.toLowerCase().contains("partner"))
                 type = AssociateType.SPOUSE;
@@ -15,6 +23,8 @@ public class Associate {
                 type = AssociateType.PARENT;
             else if(relation.toLowerCase().contains("brother") || relation.toLowerCase().contains("sister"))
                 type = AssociateType.SIBLING;
+            else if(relation.toLowerCase().contains("son") || relation.toLowerCase().contains("daughter") || relation.toLowerCase().contains("child"))
+                type = AssociateType.CHILD;
             else if(relation.toLowerCase().contains("uncle") || relation.toLowerCase().contains("aunt") ||
                 relation.toLowerCase().contains("nephew") || relation.toLowerCase().contains("niece") ||
                 relation.toLowerCase().contains("cousin"))
@@ -22,5 +32,11 @@ public class Associate {
             else
                 type = AssociateType.OTHER;
         }
+
+    }
+
+    @Override
+    public String toString() {
+        return "Associate Name: " + this.name + ", Relationship: " + this.relation + ", Associate Type: " + type.name();
     }
 }
