@@ -11,61 +11,74 @@ import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "raw_person", uniqueConstraints= @UniqueConstraint(columnNames = {"id"}))
 public class RawPerson {
-    private String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id = -1;
+    private String originalName;
     private String firstName;
     private String familyName;
     private String aka;
     private boolean facebookName = false;
     private String originalDateofBirthString;
+    @Convert(converter = LocalDateAttributeConverter.class)
     private LocalDate dateOfBirth;
-    private List<FacebookDetail> facebookDetails;
-    private List<Associate> knownAssociates;
-    private String rawAssociatedCrimes;
-    private List<AssociatedCrime> associatedCrimes;
+    private String rawCrimeData;
     private String additionalInformation;
-    private long importId = -1;
 
-    public RawPerson(long importId, String name) {
-        this.importId = importId;
-        this.name = name;
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(targetEntity=FacebookDetail.class, mappedBy="rawPerson", cascade = CascadeType.ALL)
+    private List<FacebookDetail> facebookDetails;
+    
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(targetEntity=Associate.class, mappedBy="rawPerson", cascade = CascadeType.ALL)
+    private List<Associate> knownAssociates;
+    
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(targetEntity=AssociatedCrime.class, mappedBy="rawPerson", cascade = CascadeType.ALL)
+    private List<AssociatedCrime> associatedCrimes;
+
+    // Empty constructor for Hibernate
+    public RawPerson() {
+    }
+
+    public RawPerson(String name) {
+        this.originalName = name;
         parseName();
     }
 
     private void parseName() {
-        if(name.startsWith("Facebook")) {
-            name = findName(name);
+        if(originalName.startsWith("Facebook")) {
+            originalName = findName(originalName);
             facebookName = true;
         }
 
-        if(name.split(" ").length > 2) {
-            familyName = name.split(" ")[name.split(" ").length-1];
+        if(originalName.split(" ").length > 2) {
+            familyName = originalName.split(" ")[originalName.split(" ").length-1];
             firstName = "";
-            for(int i = 0; i < name.split(" ").length-1; i++)
-                firstName += name.split(" ")[i] + " ";
+            for(int i = 0; i < originalName.split(" ").length-1; i++)
+                firstName += originalName.split(" ")[i] + " ";
             firstName = firstName.trim();
         }
-        else if(name.split(" ").length == 2) {
-            firstName = name.split(" ")[0];
-            familyName =name.split(" ")[1];
+        else if(originalName.split(" ").length == 2) {
+            firstName = originalName.split(" ")[0];
+            familyName =originalName.split(" ")[1];
         } else {
-            familyName = name;
+            familyName = originalName;
             firstName = "";
         }
     }
 
-    public RawPerson(long importId, String name, String aka) {
-        this.importId = importId;
-        this.name = name;
+    public RawPerson(String name, String aka) {
+        this.originalName = name;
         parseName();
         this.aka = aka;
-    }
-
-    public void fixPerson(long importId) {
-        this.importId = importId;
-        parseName();
-        setDateOfBirth(this.originalDateofBirthString);
     }
 
     private String findName(String name) {
@@ -75,11 +88,11 @@ public class RawPerson {
     }
 
     public String getName() {
-        return this.name;
+        return this.originalName;
     }
 
     public long getId() {
-        return this.importId;
+        return this.id;
     }
 
     private void setDateOfBirth(String dobString) throws DateTimeParseException {
@@ -115,7 +128,7 @@ public class RawPerson {
     }
 
     public void setRawAssociatedCrimes(String rawAssociatedCrimes) {
-        this.rawAssociatedCrimes = rawAssociatedCrimes;
+        this.rawCrimeData = rawAssociatedCrimes;
     }
 
     /* Methods below this point are all for PDF Imports */
@@ -132,9 +145,9 @@ public class RawPerson {
                 if(data.split("\\(").length > 1) {
                     String name = data.split("\\(")[0];
                     String aka = data.split("\\(")[1].trim().substring(0, data.split("\\(")[1].trim().length() - 1);
-                    person = new RawPerson(ImportRestService.getImportId(), name, aka);
+                    person = new RawPerson(name, aka);
                 } else {
-                    person = new RawPerson(ImportRestService.getImportId(), data);
+                    person = new RawPerson(data);
                 }
             } else {
                 throw new RawPersonProcessingException("Person parsed does not have a valid name field.  Name field specified was:\n" + data);
@@ -170,9 +183,9 @@ public class RawPerson {
                             if(link.split("\\(").length > 1) {
                                 String href = link.split("\\(")[0];
                                 String status = link.split("\\(")[1].trim().substring(0, link.split("\\(")[1].trim().length()-1);
-                                facebookDetails.add(new FacebookDetail(href.trim(), status.trim()));
+                                facebookDetails.add(new FacebookDetail(href.trim(), status.trim(), person));
                             } else {
-                                facebookDetails.add(new FacebookDetail(link.trim()));
+                                facebookDetails.add(new FacebookDetail(link.trim(), person));
                             }
                         }
                         person.setFaceBookDetails(facebookDetails);
@@ -187,7 +200,7 @@ public class RawPerson {
             data = getData(personArr, " ", dataPositions.get("associates"));
             if(data.length() > 0 && data.split(": ").length > 1) {
                 data = data.split(": ")[1];
-                List<Associate> associates = parseAssociates(data);
+                List<Associate> associates = parseAssociates(data, person);
                 person.setKnownAssociates(associates);
             } else {
                 logger.warn("Unable to parse associates data for person " + person.getName() + " with id " + person.getId());
@@ -202,7 +215,7 @@ public class RawPerson {
                 if(data.trim().length() > 0) {
                     List<AssociatedCrime> crimes = new ArrayList<>();
                     for(String crimeData : data.split("\n \n")) {
-                        crimes.add(new AssociatedCrime(crimeData.replaceAll("\n", "")));
+                        crimes.add(new AssociatedCrime(crimeData.replaceAll("\n", ""), person));
                     }
                     person.setAssocatedCrimes(crimes);
                 }
@@ -221,7 +234,7 @@ public class RawPerson {
         return person;
     }
 
-    private static List<Associate> parseAssociates(String data) {
+    private static List<Associate> parseAssociates(String data, RawPerson person) {
         List<Associate> associates = new ArrayList<>();
         boolean relation = false;
         String currentAssociate = "";
@@ -233,9 +246,9 @@ public class RawPerson {
             data = data.substring(1);
             if(currentChar == ',' && !relation) {
                 if(relationship.isEmpty()) {
-                    associates.add(new Associate(currentAssociate.trim()));
+                    associates.add(new Associate(currentAssociate.trim(), person));
                 } else {
-                    associates.add(new Associate(currentAssociate.trim(), relationship.trim()));
+                    associates.add(new Associate(currentAssociate.trim(), relationship.trim(), person));
                 }
                 relationship = "";
                 currentAssociate = "";
@@ -259,9 +272,9 @@ public class RawPerson {
                 currentAssociate += currentChar;
         }
         if(relationship.isEmpty()) {
-            associates.add(new Associate(currentAssociate.trim()));
+            associates.add(new Associate(currentAssociate.trim(), person));
         } else {
-            associates.add(new Associate(currentAssociate, relationship.trim()));
+            associates.add(new Associate(currentAssociate, relationship.trim(), person));
         }
         return associates;
     }

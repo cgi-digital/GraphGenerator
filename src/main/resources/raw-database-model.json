@@ -1,4 +1,3 @@
-// Liquibase JSON for creating the database
 {
     "databaseChangeLog": [
         {
@@ -8,7 +7,7 @@
                 "changes": [
                     {
                         "createTable": {
-                            "tableName": "person",
+                            "tableName": "raw_person",
                             "columns": [
                                 {
                                     "column": {
@@ -42,6 +41,18 @@
                                 {
                                     "column": {
                                         "name": "aka",
+                                        "type": "varchar(100)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "facebook_name",
+                                        "type": "boolean"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "original_date_of_birth",
                                         "type": "varchar(50)"
                                     }
                                 },
@@ -62,56 +73,6 @@
                                         "name": "raw_crime_data",
                                         "type": "text"
                                     }
-                                },
-                                {
-                                    "column": {
-                                        "name": "associate_only",
-                                        "type": "boolean"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet" : {
-                "id": 1,
-                "author": "jamie",
-                "changes": [
-                    {
-                        "createTable": {
-                            "tableName": "JsonLog",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "id",
-                                        "type": "bigint",
-                                        "autoIncrement": true,
-                                        "constraints": {
-                                            "primaryKey": true,
-                                            "nullable": false
-                                        }
-                                    }
-                                },
-                                {
-                                    "column" : {
-                                        "name": "person_id",
-                                        "type": "bigint"
-                                    }
-                                },
-                                {
-                                    "column" : {
-                                        "name": "json",
-                                        "type": "text"
-                                    }
-                                },
-                                {
-                                    "column" : {
-                                        "name": "log_date",
-                                        "type": "timestamp"
-                                    }
                                 }
                             ]
                         }
@@ -121,12 +82,12 @@
         },
         {
             "changeSet": {
-                "id": 2,
+                "id": 1,
                 "author": "jamie",
                 "changes": [
                     {
                         "createTable": {
-                            "tableName" : "AssociatePerson",
+                            "tableName" : "raw_associate_person",
                             "columns": [
                                 {
                                     "column": {
@@ -141,14 +102,14 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "person_id",
+                                        "name": "raw_person_id",
                                         "type": "bigint"
                                     }
                                 },
                                 {
-                                    "column": {
-                                        "name": "associated_person_id",
-                                        "type": "bigint"
+                                    "coumn": {
+                                        "name": "name",
+                                        "type": "varchar(100)"
                                     }
                                 },
                                 {
@@ -171,12 +132,12 @@
         },
         {
             "changeSet": {
-                "id": 3,
+                "id": 2,
                 "author": "jamie",
                 "changes": [
                     {
                         "createTable": {
-                            "tableName" : "Crime",
+                            "tableName" : "raw_crime",
                             "columns": [
                                 {
                                     "column": {
@@ -191,13 +152,19 @@
                                 },
                                 {
                                     "column": {
+                                        "name": "raw_person_id",
+                                        "type": "bigint"
+                                    }
+                                },
+                                {
+                                    "column": {
                                         "name": "description",
                                         "type": "text"
                                     }
                                 },
                                 {
                                     "column": {
-                                        "name": "date",
+                                        "name": "reported_date",
                                         "type": "date"
                                     }
                                 },
@@ -215,16 +182,16 @@
         },
         {
             "changeSet": {
-                "id": 4,
+                "id": 3,
                 "author": "jamie",
                 "changes": [
                     {
                         "createTable": {
-                            "tableName" : "PersonCrime",
+                            "tableName" : "Person_2_crime",
                             "columns": [
                                 {
                                     "column": {
-                                        "name": "person_id",
+                                        "name": "raw_person_id",
                                         "type": "bigint"
                                     }
                                 },
@@ -242,12 +209,12 @@
         },
         {
             "changeSet": {
-                "id": 5,
+                "id": 4,
                 "author": "jamie",
                 "changes": [
                     {
                         "createTable": {
-                            "tableName" : "Facebook",
+                            "tableName" : "raw_facebook_details",
                             "columns": [
                                 {
                                     "column": {
@@ -263,7 +230,7 @@
                                 {
                                     "column": {
                                         "name": "link",
-                                        "type": "varcahr(2083)"
+                                        "type": "varchar(2083)"
                                     }
                                 },
                                 {
@@ -274,7 +241,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "person_id",
+                                        "name": "raw_person_id",
                                         "type": "bigint"
                                     }
                                 }

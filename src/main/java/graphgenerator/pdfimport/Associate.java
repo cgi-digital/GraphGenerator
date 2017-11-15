@@ -1,18 +1,37 @@
 package graphgenerator.pdfimport;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "raw_associate")
 public class Associate {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    
     private String name;
     private String relation = null;
     private AssociateType type;
 
-    public Associate(String name) {
+    @ManyToOne(cascade= CascadeType.ALL)
+    @JoinColumn(name="raw_person_id")
+    private RawPerson rawPerson;
+
+    public Associate() {
+        
+    }
+
+    public Associate(String name, RawPerson owner) {
         this.name = name;
         this.type = AssociateType.OTHER;
+        this.rawPerson = owner;
     }
     
-    public Associate(String name, String relation) {
+    public Associate(String name, String relation, RawPerson owner) {
         this.name = name;
         this.relation = relation;
+        this.rawPerson = owner;
 
         if(relation != null && !relation.trim().isEmpty()) {
             if(relation.toLowerCase().contains("wife") || relation.toLowerCase().contains("husband") || relation.toLowerCase().contains("partner"))

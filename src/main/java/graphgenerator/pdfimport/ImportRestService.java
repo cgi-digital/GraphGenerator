@@ -1,13 +1,16 @@
 package graphgenerator.pdfimport;
 
 import java.util.concurrent.atomic.AtomicLong;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,22 +21,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 @RestController
 public class ImportRestService<Public> {
     private static final AtomicLong currentId = new AtomicLong();
     private static ConcurrentMap<Long, RawPerson> persons = new ConcurrentHashMap<>();
     private static final Logger logger = LoggerFactory.getLogger("ImportRestService");
+    @PersistenceContext
+    private EntityManager em;
 
-    // @PostMapping("/import-person")
-    // public String importPersonJson(@RequestBody String personJson) {
-    //     Gson gson = new Gson();
-    //     RawPerson person = gson.fromJson(personJson, RawPerson.class);
-    //     Long importId = currentId.incrementAndGet();
-    //     persons.put(importId, person);
-    //     person.fixPerson(importId);
-    //     return gson.toJson(person);
-    // }
+    @Autowired
+    private RawPersonDAO personDAO;
 
     @GetMapping("/get-person/{id}")
     public String getPerson(@PathVariable Long id) {
@@ -53,7 +57,9 @@ public class ImportRestService<Public> {
         SimplePersonList simplePersons = new SimplePersonList(ImportRestService.persons.values());
         return gson.toJson(simplePersons);
     }
-
+    
+    @Modifying
+    @Transactional
     @PostMapping("/import-pdf")
     public String importPdf(@RequestParam("file") MultipartFile file) throws IOException  {
         PDDocument doc = PDDocument.load(file.getBytes());
@@ -73,13 +79,15 @@ public class ImportRestService<Public> {
         for(int i = 1; i < personData.length; i++) {
             try {
                 RawPerson person = RawPerson.rawPersonFromPDFString("Name: " + personData[i].trim());
+                personDAO.save(person);
                 persons.put(person.getId(), person);
             } catch(RawPersonProcessingException e) {
                 logger.warn(e.getMessage());
             }
         }
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return "<!DOCTYPE html><html><head><title>Test Response</title></head><body><pre>"+gson.toJson(persons)+"\n----------------------\n"+content+"</pre></body></html>";
+        return "{\"status\":\"done\"}";
+        //Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        //return gson.toJson(persons);
     }
 
     public static long getImportId() {
