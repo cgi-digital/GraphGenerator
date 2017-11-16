@@ -65,13 +65,13 @@
                                 {
                                     "column": {
                                         "name": "additional_information",
-                                        "type": "text"
+                                        "type": "varchar(4096)"
                                     }
                                 },
                                 {
                                     "column": {
                                         "name": "raw_crime_data",
-                                        "type": "text"
+                                        "type": "varchar(4096)"
                                     }
                                 }
                             ]
@@ -159,7 +159,7 @@
                                 {
                                     "column": {
                                         "name": "description",
-                                        "type": "text"
+                                        "type": "varchar(4096)"
                                     }
                                 },
                                 {
