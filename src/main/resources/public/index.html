@@ -1,72 +1,15 @@
-
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Create</title>
-    <link rel="stylesheet" href="../css/normalize.css">
-    <link rel="stylesheet" href="../css/style.css">
-</head>
-<body>
-<section class="loginform cf">
-    <form name="create" action="/person" method="post" >
-        <ul>
-            <li>
-                <label for="pictureFilePath">Picture Path</label>
-                <input type="text" id="pictureFilePath" name="pictureFilePath" />
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" placeholder="" required>
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <label for="alias">Aliases (Separate the provided values by using a comma "," )</label>
-                <input type="text" id="alias" name="alias" placeholder="">
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <label for="dob">Date of Birth</label>
-                <input type="date" id="dob" name="dob" placeholder="" required>
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <label for="facebook">Facebook Page (Separate the provided values by using a comma "," )</label>
-                <input type="text" id="facebook" name="facebook" placeholder="">
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <label for="associates">Known Associates (Separate the provided values by using a comma "," )</label>
-                <input type="text" id="associates" name="associates" placeholder="">
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <label for="crimes">Associated Crimes (Separate the provided values by using a comma "," )</label>
-                <input type="text" id="crimes" name="crimes" placeholder="">
-            </li>
-        </ul>
-        <ul>
-            <li>
-                <label for="info">Additional Information</label>
-                <input type="text" id="info" name="info" placeholder="">
-            </li>
-        </ul>
+	<head>
+		<title>Upload Test PDF</title>
+	</head>
+	<body>
+		<h1>Upload PDF file</h1>
 
-        <ul>
-            <li>
-                <input type="submit" value="Create">
-            </li>
-        </ul>
-    </form>
-
-    <a href="http://localhost:8888/graph">View graph</a>
-
-</section>
-</body>
+		<form action="http://localhost:8888/import-pdf" method="post" enctype="multipart/form-data">
+			<label for="file">Filename:</label>
+			<input type="file" name="file" id="file" />
+			<input type="submit" name="submit" value="Submit" />
+		</form>
+	</body>
 </html>
