@@ -1,6 +1,6 @@
 package graphgenerator;
 
-import graphgenerator.graph.GraphBuilder;
+import graphgenerator.graph.GraphBuilderCypher;
 import graphgenerator.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -28,7 +28,7 @@ public class Controller {
     FileService fileService;
 
     @Autowired
-    GraphBuilder graphBuilder;
+    GraphBuilderCypher graphBuilder;
 
     @RequestMapping(value = "/graph", method = RequestMethod.GET)
     public void buildGraph(HttpServletResponse httpServletResponse) throws IOException {
@@ -36,57 +36,57 @@ public class Controller {
 
         httpServletResponse.sendRedirect("http://localhost:8080/");
     }
-
-    @RequestMapping(value="/person", method = RequestMethod.POST)
-    public void create(@RequestParam String name,
-                         @RequestParam String alias,
-                         @RequestParam String dob,
-                         @RequestParam String facebook,
-                         @RequestParam String associates,
-                         @RequestParam String crimes,
-                         @RequestParam String info,
-                         @RequestParam String pictureFilePath,
-                         HttpServletResponse httpServletResponse) throws IOException {
-        Person person = new Person();
-
-        person.setName(extractName(name));
-        person.setAdditionalNameInformation(extractAdditionalNameInformation(name));
-        person.setDob(dob);
-
-//        person = personService.createPerson(person);
-
-        if (!alias.equals(""))
-        {
-            person.setAliases(createAliasList(person, alias));
-        }
-        if (!facebook.equals("")) {
-            person.setFacebook(createFacebookPagesList(person, facebook));
-        }
-        if (!associates.equals("")) {
-            person.setAssociations(createAssociationsList(person, name, associates));
-        }
-        if (!crimes.equals("")) {
-            person.setCrimes(createCrimes(person, crimes));
-        }
-        if (!info.equals("")) {
-            person.setInfo(info);
-        }
-
-        person.setPictureFilePath(pictureFilePath);
-
+//
+//    @RequestMapping(value="/person", method = RequestMethod.POST)
+//    public void create(@RequestParam String name,
+//                         @RequestParam String alias,
+//                         @RequestParam String dob,
+//                         @RequestParam String facebook,
+//                         @RequestParam String associates,
+//                         @RequestParam String crimes,
+//                         @RequestParam String info,
+//                         @RequestParam String pictureFilePath,
+//                         HttpServletResponse httpServletResponse) throws IOException {
+//        Person person = new Person();
+//
+//        person.setName(extractName(name));
+//        person.setAdditionalNameInformation(extractAdditionalNameInformation(name));
+//        person.setDob(dob);
+//
+////        person = personService.createPerson(person);
+//
+//        if (!alias.equals(""))
+//        {
+//            person.setAliases(createAliasList(person, alias));
+//        }
+//        if (!facebook.equals("")) {
+//            person.setFacebook(createFacebookPagesList(person, facebook));
+//        }
+//        if (!associates.equals("")) {
+//            person.setAssociations(createAssociationsList(person, name, associates));
+//        }
+//        if (!crimes.equals("")) {
+//            person.setCrimes(createCrimes(person, crimes));
+//        }
+//        if (!info.equals("")) {
+//            person.setInfo(info);
+//        }
+//
+//        person.setPictureFilePath(pictureFilePath);
+//
 //        person = personService.updatePerson(person);
-
-        httpServletResponse.sendRedirect("http://localhost:8888/");
-    }
-
-    @RequestMapping(value="/files/{filename:.+}", method = RequestMethod.GET)
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename, @RequestParam String type) throws IOException {
-
-
-        Resource file = fileService.loadAsResource(filename,type);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
-    }
+//
+//        httpServletResponse.sendRedirect("http://localhost:8888/");
+//    }
+//
+//    @RequestMapping(value="/files/{filename:.+}", method = RequestMethod.GET)
+//    public ResponseEntity<Resource> serveFile(@PathVariable String filename, @RequestParam String type) throws IOException {
+//
+//
+//        Resource file = fileService.loadAsResource(filename,type);
+//        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+//                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+//    }
 
     private String extractName(String name)
     {
