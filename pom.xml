@@ -56,7 +56,12 @@
             <artifactId>pdfbox</artifactId>
             <version>2.0.8</version>
         </dependency>
-
+        <!-- Liquibase for Databsae creation (Instead of hibernate)-->
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
