@@ -1,22 +1,19 @@
 package graphgenerator.graph;
 
-import graphgenerator.PicturesConfiguration;
+import graphgenerator.configuration.PicturesConfiguration;
+import graphgenerator.models.dao.PersonDAO;
 import graphgenerator.models.Association;
 import graphgenerator.models.Crime;
 import graphgenerator.models.Person;
-import graphgenerator.models.PersonService;
 import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.driver.v1.*;
-import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
-import org.neo4j.graphdb.schema.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,12 +24,15 @@ import static org.neo4j.driver.v1.Values.parameters;
 @Component
 public class GraphBuilderCypher
 {
+    private static final Logger logger = LoggerFactory.getLogger("GraphBuilderCypher");
+
+
     private int numberOFConnectionsForKeyIndividuals;
     private String neo4jBoltAddress;
     private String serverPort;
 
     @Autowired
-    PersonService personService;
+    PersonDAO personDAO;
 
     private final Session session;
 
@@ -40,6 +40,8 @@ public class GraphBuilderCypher
                               @Value("${numberOFConnectionsForKeyIndividuals}") int numberOFConnectionsForKeyIndividuals,
                               @Value("${server.port}") String serverPort)
     {
+        logger.info("Initialising connection to the Neo4j graph database");
+
         GraphDatabaseSettings.BoltConnector bolt = GraphDatabaseSettings.boltConnector( "0" );
 
         this.neo4jBoltAddress = neo4jBoltAddress;
@@ -48,6 +50,8 @@ public class GraphBuilderCypher
 
         Driver driver = GraphDatabase.driver( "bolt://"+neo4jBoltAddress, AuthTokens.basic( "neo4j", "neo4j" ) );
         session = driver.session();
+
+        logger.info("Connection to the Neo4j graph database is now live");
     }
 
     public void buildGraph() {
@@ -58,58 +62,66 @@ public class GraphBuilderCypher
         Map<String, List<Long>> nameToId = new HashMap<>();
         Map<Long, List<Association>> associationsMap = new HashMap<>();
 
+
+        logger.info("Clearing the Neo4j graph database");
+
         //clearing the graph before re-inserting nodes
         session.run("MATCH (n) DETACH DELETE n");
 
-        for (Person person : personService.findAllPersons()) {
+        logger.info("Neo4j graph database cleared");
 
-            String image = person.getPictureFilePath().equals("") ? "http://localhost:"+serverPort+"/files/person.png?type=person" : "http://localhost:"+serverPort+"/files/"+person.getPictureFilePath()+"?type=person";
-            String keyIndividual = person.getAssociations().size() > numberOFConnectionsForKeyIndividuals ? "Yes" : "No";
+        logger.info("Inserting new nodes and edges to the Neo4j graph database");
+
+        for (Person person : personDAO.findAll()) {
+
+//            String image = person.getPictureFilePath().equals("") ? "http://localhost:"+serverPort+"/files/person.png?type=person" : "http://localhost:"+serverPort+"/files/"+person.getPictureFilePath()+"?type=person";
+            String keyIndividual = person.getKnownAssociations().size() > numberOFConnectionsForKeyIndividuals ? "Yes" : "No";
 
             StatementResult personCreationResult = session.run("CREATE (a:Person " +
                             "{Id: {id}," +
                             "Name: {name}, " +
+                            "Alias: {alias}," +
                             "Date_of_Birth: {dob}, " +
                             "Node_Type: {nodeType}," +
                             "Additional_Information: {info}," +
-                            "image_url: {image}," +
+//                            "image_url: {image}," +
                             "Key_Individual: {key} }) RETURN a",
-                    parameters("id", "" + person.getPersonId() + "",
-                            "name", "" + person.getName() + "",
-                            "dob", "" + person.getDob() + "",
+                    parameters("id", "" + person.getId() + "",
+                            "name", "" + person.getOriginalName().trim() + "",
+                            "alias", "" + person.getAka() + "",
+                            "dob", "" + person.getOriginalDateofBirthString().trim() + "",
                             "nodeType", "Person",
-                            "info", "" + person.getInfo() != null ? person.getInfo() : "" + "",
-                            "image", "" + image +"",
+                            "info", "" + person.getAdditionalInformation() != null ? person.getAdditionalInformation() : "" + "",
+//                            "image", "" + image +"",
                             "key", ""+keyIndividual+""));
 
             long personNodeId = ((InternalNode) personCreationResult.list().get(0).asMap().get("a")).id();
 
             //mapping persons to their respective nodes
-            personIdToNodeMap.put(person.getPersonId(), personNodeId);
+            personIdToNodeMap.put(person.getId(), personNodeId);
 
             //mapping names to the ids of the persons
-            if (nameToId.get(person.getName()) == null) {
-                nameToId.put(person.getName(), new ArrayList<>());
+            if (nameToId.get(person.getOriginalName().trim()) == null) {
+                nameToId.put(person.getOriginalName().trim(), new ArrayList<>());
             }
-            nameToId.get(person.getName()).add(person.getPersonId());
+            nameToId.get(person.getOriginalName().trim()).add(person.getId());
 
+//
+//            for (int a = 0; a < person.getAliases().size(); a++) {
+//                session.run("MATCH (s) WHERE ID(s) = " + personNodeId + " \n" +
+//                        "SET s.Alias" + (a + 1) + " = '" + person.getAliases().get(a).getAlias() + "' \n" +
+//                        "RETURN s ");
+//            }
 
-            for (int a = 0; a < person.getAliases().size(); a++) {
+            for (int f = 0; f < person.getFacebookDetails().size(); f++) {
                 session.run("MATCH (s) WHERE ID(s) = " + personNodeId + " \n" +
-                        "SET s.Alias" + (a + 1) + " = '" + person.getAliases().get(a).getAlias() + "' \n" +
+                        "SET s.Facebook" + (f + 1) + " = '" + person.getFacebookDetails().get(f).getLink() + " (" + person.getFacebookDetails().get(f).getAdditionalFacebookPageInformation() + ")' \n" +
                         "RETURN s ");
             }
-
-            for (int f = 0; f < person.getFacebook().size(); f++) {
-                session.run("MATCH (s) WHERE ID(s) = " + personNodeId + " \n" +
-                        "SET s.Facebook" + (f + 1) + " = '" + person.getFacebook().get(f).getFacebookPage() + " (" + person.getFacebook().get(f).getAdditionalFacebookPageInformation() + ")' \n" +
-                        "RETURN s ");
-            }
-
 
                 for(Crime crime : person.getCrimes())
                 {
-                    String crimeIcon = "http://localhost:"+serverPort+"/files/" + categorizeCrime(crime.getCrime())+"?type=crime";
+                    String crimeIcon = "http://localhost:"+serverPort+"/files/" + categorizeCrime(crime.getDescription())+"?type=crime";
 
                     StatementResult crimeCreationResult = session.run("MATCH (s) WHERE ID(s) = " + personNodeId + " \n" +
                             "CREATE (a:Crime " +
@@ -118,8 +130,8 @@ public class GraphBuilderCypher
                             "   image_url: {image} })" +
                             "CREATE(s)-[r:HAS_COMMITED]->(a)" +
                             "RETURN a",
-                            parameters("id", "" + person.getPersonId() + "",
-                                    "crime", "" + crime.getCrime() + "",
+                            parameters("id", "" + person.getId() + "",
+                                    "crime", "" + crime.getDescription() + "",
                                     "nodeType", "Crime",
                                     "image", "" + crimeIcon +""));
 
@@ -129,13 +141,13 @@ public class GraphBuilderCypher
                     crimesIDs.add(crimeNodeId);
                 }
 
-                for(Association association : person.getAssociations())
+                for(Association association : person.getKnownAssociations())
                 {
-                    if(associationsMap.get(person.getPersonId()) == null)
+                    if(associationsMap.get(person.getId()) == null)
                     {
-                        associationsMap.put(person.getPersonId(), new ArrayList<>());
+                        associationsMap.put(person.getId(), new ArrayList<>());
                     }
-                    associationsMap.get(person.getPersonId()).add(association);
+                    associationsMap.get(person.getId()).add(association);
                 }
             }
 
@@ -145,72 +157,79 @@ public class GraphBuilderCypher
             for(Long personFromId : associationsMap.keySet())
             {
                 //iterating through the associations registered for the node
-                for(Association associationFrom : associationsMap.get(personFromId))
+                if(associationsMap.get(personFromId) != null && !associationsMap.get(personFromId).isEmpty())
                 {
-                    String personNameFrom = associationFrom.getPersonNameFrom();
-                    String personNameTo = associationFrom.getPersonNameTo();
-
-                    //iterating through the persons whose name matches the other end of the association
-                    if(nameToId.get(personNameTo) != null)
+                    for(Association associationFrom : associationsMap.get(personFromId))
                     {
-                        for(Long personToId : nameToId.get(personNameTo))
+                        String personNameFrom = associationFrom.getPersonNameFrom().trim();
+                        String personNameTo = associationFrom.getPersonNameTo().trim();
+
+                        //iterating through the persons whose name matches the other end of the association
+                        if(nameToId.get(personNameTo) != null)
                         {
-                            //iterating through the associations of the person at the other end of the association
-                            if(associationsMap.get(personToId) != null)
+                            for(Long personToId : nameToId.get(personNameTo))
                             {
-                                List<Association> associationsToRemove = new ArrayList<>();
-                                for(Association associationTo : associationsMap.get(personToId))
+                                //iterating through the associations of the person at the other end of the association
+
+                                if(personFromId.longValue() != personToId.longValue())
                                 {
-                                    if(associationTo.getPersonNameTo().equals(personNameFrom) && nameToId.get(personNameFrom).contains(personFromId))
+                                    if(associationsMap.get(personToId) != null)
                                     {
-
-                                        boolean alreadyConnected = false;
-
-                                        StatementResult alreadyConnectedCheck = session.run("MATCH(s:Person)-[r]-(t:Person) WHERE ID(s) = "+personIdToNodeMap.get(personFromId)+" AND ID(t) = "+personIdToNodeMap.get(personToId)+" RETURN r");
-
-                                        if(!alreadyConnectedCheck.list().isEmpty())
+                                        List<Association> associationsToRemove = new ArrayList<>();
+                                        for(Association associationTo : associationsMap.get(personToId))
                                         {
-                                            alreadyConnected = true;
-                                        }
-
-                                        if(!alreadyConnected)
-                                        {
-                                            if(nameToId.get(personNameTo).size() == 1)
+                                            if(associationTo.getPersonNameTo().equals(personNameFrom) && nameToId.get(personNameFrom).contains(personFromId))
                                             {
-                                                String associationTypeSetting = associationFrom.getType() != null ? "{ Association_Type: '"+associationFrom.getType()+"'}" : "";
 
-                                                StatementResult associationCreationResult = session.run(
-                                                        "MATCH (f:Person) WHERE ID(f) = "+personIdToNodeMap.get(personFromId)+" " +
-                                                                "MATCH (t:Person) WHERE ID(t) = "+personIdToNodeMap.get(personToId)+"  " +
-                                                                "CREATE(f)-[r:ASSOCIATES_WITH "+ associationTypeSetting +"]->(t) " +
-                                                                "return f,t,r");
+                                                boolean alreadyConnected = false;
 
-                                                //matched a single name to another single name, remove the second association
-                                                if(nameToId.get(personNameFrom).size() == 1)
+                                                StatementResult alreadyConnectedCheck = session.run("MATCH(s:Person)-[r]-(t:Person) WHERE ID(s) = "+personIdToNodeMap.get(personFromId)+" AND ID(t) = "+personIdToNodeMap.get(personToId)+" RETURN r");
+
+                                                if(!alreadyConnectedCheck.list().isEmpty())
                                                 {
-                                                    associationsToRemove.add(associationTo);
+                                                    alreadyConnected = true;
+                                                }
+
+                                                if(!alreadyConnected)
+                                                {
+                                                    if(nameToId.get(personNameTo).size() == 1)
+                                                    {
+                                                        String associationTypeSetting = associationFrom.getType() != null ? "{ Association_Type: '"+associationFrom.getType()+"'}" : "";
+
+                                                        StatementResult associationCreationResult = session.run(
+                                                                "MATCH (f:Person) WHERE ID(f) = "+personIdToNodeMap.get(personFromId)+" " +
+                                                                        "MATCH (t:Person) WHERE ID(t) = "+personIdToNodeMap.get(personToId)+"  " +
+                                                                        "CREATE(f)-[r:ASSOCIATES_WITH "+ associationTypeSetting +"]->(t) " +
+                                                                        "return f,t,r");
+
+                                                        //matched a single name to another single name, remove the second association
+                                                        if(nameToId.get(personNameFrom).size() == 1)
+                                                        {
+                                                            associationsToRemove.add(associationTo);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        String associationTypeSetting = associationFrom.getType() != null ? "{ Association_Type: '"+associationFrom.getType()+"'}" : "";
+
+                                                        StatementResult associationCreationResult = session.run(
+                                                                "MATCH (f:Person) WHERE ID(f) = "+personIdToNodeMap.get(personFromId)+" " +
+                                                                        "MATCH (t:Person) WHERE ID(t) = "+personIdToNodeMap.get(personToId)+"  " +
+                                                                        "CREATE(f)-[r:PROBABLY_ASSOCIATES_WITH "+ associationTypeSetting +"]->(t) " +
+                                                                        "return f,t,r");
+                                                    }
                                                 }
                                             }
-                                            else
-                                            {
-                                                String associationTypeSetting = associationFrom.getType() != null ? "{ Association_Type: '"+associationFrom.getType()+"'}" : "";
-
-                                                StatementResult associationCreationResult = session.run(
-                                                        "MATCH (f:Person) WHERE ID(f) = "+personIdToNodeMap.get(personFromId)+" " +
-                                                                "MATCH (t:Person) WHERE ID(t) = "+personIdToNodeMap.get(personToId)+"  " +
-                                                                "CREATE(f)-[r:PROBABLY_ASSOCIATES_WITH "+ associationTypeSetting +"]->(t) " +
-                                                                "return f,t,r");
-                                            }
                                         }
+                                        associationsMap.get(personToId).removeAll(associationsToRemove);
                                     }
                                 }
-                                associationsMap.get(personToId).removeAll(associationsToRemove);
                             }
                         }
                     }
                 }
-            }
 
+            }
 
 
 //        Map<Long,List<String>> crimeToNamesMap = new HashMap<>();
@@ -270,6 +289,8 @@ public class GraphBuilderCypher
 //            txCrimes.success();
 //        }
 
+        logger.info("The Neo4j graph database has been updated");
+
     }
 
 
@@ -318,21 +339,5 @@ public class GraphBuilderCypher
             match = false;
         }
         return match;
-    }
-
-
-    private static void registerShutdownHook( final GraphDatabaseService graphDb )
-    {
-        // Registers a shutdown hook for the Neo4j instance so that it
-        // shuts down nicely when the VM exits (even if you "Ctrl-C" the
-        // running application).
-        Runtime.getRuntime().addShutdownHook( new Thread()
-        {
-            @Override
-            public void run()
-            {
-                graphDb.shutdown();
-            }
-        } );
     }
 }

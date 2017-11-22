@@ -1,7 +1,7 @@
 {
 	"_type": "Project",
 	"_id": "AAAAAAFF+h6SjaM2Hec=",
-	"name": "Untitled",
+	"personNameTo": "Untitled",
 	"ownedElements": [
 		{
 			"_type": "UMLModel",
@@ -9,7 +9,7 @@
 			"_parent": {
 				"$ref": "AAAAAAFF+h6SjaM2Hec="
 			},
-			"name": "Model",
+			"personNameTo": "Model",
 			"ownedElements": [
 				{
 					"_type": "UMLClassDiagram",
@@ -17,7 +17,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "Main",
+					"personNameTo": "Main",
 					"visible": true,
 					"defaultDiagram": true
 				}
@@ -30,7 +30,7 @@
 			"_parent": {
 				"$ref": "AAAAAAFF+h6SjaM2Hec="
 			},
-			"name": "Data Model1",
+			"personNameTo": "Data Model1",
 			"ownedElements": [
 				{
 					"_type": "ERDDiagram",
@@ -38,7 +38,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "ERDDiagram1",
+					"personNameTo": "ERDDiagram1",
 					"visible": true,
 					"defaultDiagram": false,
 					"ownedViews": [
@@ -1705,7 +1705,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "Person",
+					"personNameTo": "Person",
 					"ownedElements": [
 						{
 							"_type": "ERDRelationship",
@@ -1719,7 +1719,7 @@
 								"_parent": {
 									"$ref": "AAAAAAFfd5Ie786xyJY="
 								},
-								"name": "id",
+								"personNameTo": "id",
 								"reference": {
 									"$ref": "AAAAAAFfd4Kga83OtQU="
 								},
@@ -1731,7 +1731,7 @@
 								"_parent": {
 									"$ref": "AAAAAAFfd5Ie786xyJY="
 								},
-								"name": "person_id",
+								"personNameTo": "person_id",
 								"reference": {
 									"$ref": "AAAAAAFfd4PSDM4KGlw="
 								},
@@ -1807,7 +1807,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "id",
+							"personNameTo": "id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": true,
@@ -1821,7 +1821,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "original_name",
+							"personNameTo": "original_name",
 							"type": "VARCHAR",
 							"length": "100",
 							"primaryKey": false,
@@ -1835,7 +1835,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "first_name",
+							"personNameTo": "first_name",
 							"type": "VARCHAR",
 							"length": "60",
 							"primaryKey": false,
@@ -1849,7 +1849,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "family_name",
+							"personNameTo": "family_name",
 							"type": "VARCHAR",
 							"length": "40",
 							"primaryKey": false,
@@ -1863,7 +1863,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "aka",
+							"personNameTo": "aka",
 							"type": "VARCHAR",
 							"length": "50",
 							"primaryKey": false,
@@ -1877,7 +1877,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "date_of_birth",
+							"personNameTo": "date_of_birth",
 							"type": "DATE",
 							"length": 0,
 							"primaryKey": false,
@@ -1891,7 +1891,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "additional_information",
+							"personNameTo": "additional_information",
 							"type": "TEXT",
 							"length": 0,
 							"primaryKey": false,
@@ -1905,7 +1905,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "raw_crime_data",
+							"personNameTo": "raw_crime_data",
 							"type": "TEXT",
 							"length": 0,
 							"primaryKey": false,
@@ -1919,7 +1919,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4Kga83OtQU="
 							},
-							"name": "associate_only",
+							"personNameTo": "associate_only",
 							"type": "BOOLEAN",
 							"length": 0,
 							"primaryKey": false,
@@ -1935,7 +1935,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "Associate"
+					"personNameTo": "Associate"
 				},
 				{
 					"_type": "ERDEntity",
@@ -1943,7 +1943,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "PersonCrime",
+					"personNameTo": "PersonCrime",
 					"columns": [
 						{
 							"_type": "ERDColumn",
@@ -1951,7 +1951,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4MQBs3r2U0="
 							},
-							"name": "person_id",
+							"personNameTo": "person_id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": true,
@@ -1965,7 +1965,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4MQBs3r2U0="
 							},
-							"name": "crime_id",
+							"personNameTo": "crime_id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": true,
@@ -1981,7 +1981,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "Facebook",
+					"personNameTo": "Facebook",
 					"columns": [
 						{
 							"_type": "ERDColumn",
@@ -1989,7 +1989,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4MpFs34Y3U="
 							},
-							"name": "id",
+							"personNameTo": "id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": true,
@@ -2003,7 +2003,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4MpFs34Y3U="
 							},
-							"name": "link",
+							"personNameTo": "link",
 							"type": "VARCHAR",
 							"length": "2083",
 							"primaryKey": false,
@@ -2017,7 +2017,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4MpFs34Y3U="
 							},
-							"name": "status",
+							"personNameTo": "additionalFacebookPageInformation",
 							"type": "VARCHAR",
 							"length": "100",
 							"primaryKey": false,
@@ -2031,7 +2031,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4MpFs34Y3U="
 							},
-							"name": "person_id",
+							"personNameTo": "person_id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": false,
@@ -2047,7 +2047,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "AssociatePerson",
+					"personNameTo": "AssociatePerson",
 					"ownedElements": [
 						{
 							"_type": "ERDRelationship",
@@ -2061,7 +2061,7 @@
 								"_parent": {
 									"$ref": "AAAAAAFfd51MvM+gdyA="
 								},
-								"name": "associate_person_id",
+								"personNameTo": "associate_person_id",
 								"reference": {
 									"$ref": "AAAAAAFfd4PSDM4KGlw="
 								},
@@ -2073,7 +2073,7 @@
 								"_parent": {
 									"$ref": "AAAAAAFfd51MvM+gdyA="
 								},
-								"name": "id",
+								"personNameTo": "id",
 								"reference": {
 									"$ref": "AAAAAAFfd4Kga83OtQU="
 								},
@@ -2089,7 +2089,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4PSDM4KGlw="
 							},
-							"name": "associate_id",
+							"personNameTo": "associate_id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": true,
@@ -2103,7 +2103,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4PSDM4KGlw="
 							},
-							"name": "person_id",
+							"personNameTo": "person_id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": false,
@@ -2117,7 +2117,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4PSDM4KGlw="
 							},
-							"name": "associated_person_id",
+							"personNameTo": "associated_person_id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": false,
@@ -2131,7 +2131,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4PSDM4KGlw="
 							},
-							"name": "relationship",
+							"personNameTo": "relationship",
 							"type": "VARCHAR",
 							"length": "50",
 							"primaryKey": false,
@@ -2145,7 +2145,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd4PSDM4KGlw="
 							},
-							"name": "relationship_type",
+							"personNameTo": "relationship_type",
 							"type": "VARCHAR",
 							"length": "15",
 							"primaryKey": false,
@@ -2161,7 +2161,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "Crime",
+					"personNameTo": "Crime",
 					"ownedElements": [
 						{
 							"_type": "ERDRelationship",
@@ -2201,7 +2201,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd45GM84gadA="
 							},
-							"name": "id",
+							"personNameTo": "id",
 							"type": "BIGINT",
 							"length": 0,
 							"primaryKey": true,
@@ -2215,7 +2215,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd45GM84gadA="
 							},
-							"name": "description",
+							"personNameTo": "description",
 							"type": "TEXT",
 							"length": 0,
 							"primaryKey": false,
@@ -2229,7 +2229,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd45GM84gadA="
 							},
-							"name": "date",
+							"personNameTo": "date",
 							"type": "DATE",
 							"length": 0,
 							"primaryKey": false,
@@ -2243,7 +2243,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfd45GM84gadA="
 							},
-							"name": "location",
+							"personNameTo": "location",
 							"type": "VARCHAR",
 							"length": "50",
 							"primaryKey": false,
@@ -2259,7 +2259,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFfd4J1tM3JEzs="
 					},
-					"name": "Person",
+					"personNameTo": "Person",
 					"ownedElements": [
 						{
 							"_type": "ERDRelationship",

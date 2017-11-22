@@ -158,7 +158,7 @@ do ->
   )
 
   arrowPath = new neo.Renderer(
-    name: 'arrowPath'
+    personNameTo: 'arrowPath'
     onGraphChange: (selection, viz) ->
       paths = selection.selectAll('path.outline').data((rel) -> [rel])
 
@@ -178,7 +178,7 @@ do ->
   )
 
   relationshipType = new neo.Renderer(
-    name: 'relationshipType'
+    personNameTo: 'relationshipType'
     onGraphChange: (selection, viz) ->
       texts = selection.selectAll("text").data((rel) -> [rel])
 
@@ -205,7 +205,7 @@ do ->
   )
 
   relationshipOverlay = new neo.Renderer(
-    name: 'relationshipOverlay'
+    personNameTo: 'relationshipOverlay'
     onGraphChange: (selection) ->
       rects = selection.selectAll('path.overlay').data((rel) -> [rel])
 

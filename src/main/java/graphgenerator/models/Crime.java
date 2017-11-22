@@ -1,50 +1,74 @@
 package graphgenerator.models;
 
+import graphgenerator.utilities.LocalDateAttributeConverter;
+
+import java.time.LocalDate;
+import java.util.Set;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "crime")
-public class Crime
-{
+@Table(name = "Crime")
+public class Crime {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade= CascadeType.ALL)
-    @JoinColumn(name="personId")
-    private Person person;
-    private String crime;
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    private String location;
+    @Convert(converter = LocalDateAttributeConverter.class)
+    private LocalDate reportedDate;
+
+//    @ManyToOne(cascade= CascadeType.ALL)
+//    @JoinColumn(name="raw_person_id")
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "PersonCrime", joinColumns = @JoinColumn(name = "crime_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"))
+    private Set<Person> persons;
 
     public Crime() {
+
     }
 
-    public Crime(Person person, String crime)
+    public Crime(String description, Set<Person> owner)
     {
-        this.person = person;
-        this.crime = crime;
+        this.description = description;
+        this.persons = owner;
     }
+
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getDescription() {
+        return description;
     }
 
-    public Person getPerson() {
-        return person;
+    public String getLocation() {
+        return location;
     }
 
-    public void setPerson(Person person) {
-        this.person = person;
+    public LocalDate getReportedDate() {
+        return reportedDate;
     }
 
-    public String getCrime() {
-        return crime;
+    public Set<Person> getPersons() {
+        return persons;
     }
 
-    public void setCrime(String crime) {
-        this.crime = crime;
+    public void setPersons(Set<Person> persons) {
+        this.persons = persons;
+    }
+
+    public void addPerson(Person person)
+    {
+        this.persons.add(person);
+    }
+
+    public void removePerson(Person person)
+    {
+        this.persons.remove(person);
     }
 }

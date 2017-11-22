@@ -1,6 +1,6 @@
-package graphgenerator.pdfimport;
+package graphgenerator.models;
 
-public enum AssociateType {
+public enum AssociationType {
     PARENT,
     CHILD,
     SPOUSE,

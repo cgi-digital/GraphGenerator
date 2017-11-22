@@ -1,4 +1,4 @@
-package graphgenerator.pdfimport;
+package graphgenerator.utilities;
 
 import java.time.LocalDate;
 import java.sql.Date;

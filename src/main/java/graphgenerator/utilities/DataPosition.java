@@ -1,11 +1,9 @@
-package graphgenerator.pdfimport;
-
-import java.util.Comparator;
+package graphgenerator.utilities;
 
 public class DataPosition implements Comparable<DataPosition>{
-    String name;
-    int start;
-    int finish;
+    public String name;
+    public int start;
+    public int finish;
 
     public DataPosition(String name, int start) {
         this.name = name;

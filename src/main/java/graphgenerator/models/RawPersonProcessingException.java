@@ -1,4 +1,4 @@
-package graphgenerator.pdfimport;
+package graphgenerator.models;
 
 public class RawPersonProcessingException extends Exception {
     public RawPersonProcessingException(String m) {

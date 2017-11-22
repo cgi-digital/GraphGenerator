@@ -1,4 +1,6 @@
-package graphgenerator.pdfimport;
+package graphgenerator.utilities;
+
+import graphgenerator.models.Person;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -12,9 +14,9 @@ public class SimplePersonList {
         persons = new ArrayList<>();
     }
 
-    SimplePersonList(Collection<RawPerson> persons) {
+    public SimplePersonList(Collection<Person> persons) {
         this.persons = new ArrayList<>();
-        for(RawPerson person : persons)
+        for(Person person : persons)
             this.persons.add(new SimplePerson(person.getId(), person.getName()));
     }
 
