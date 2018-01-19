@@ -80,6 +80,10 @@ public class Person {
         return aka;
     }
 
+    public boolean isFacebookName() {
+        return facebookName;
+    }
+
     public String getOriginalDateofBirthString() {
         return originalDateofBirthString;
     }

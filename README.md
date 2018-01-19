@@ -1,14 +1,16 @@
 # GraphGenerator
 
-Custom project that integrates input data into a specified RDBMS and then build a graph representation of the data using Neo4j and the Neo4j browser
+Custom project that integrates input data into a specified RDBMS and then builds a graph representation of the data using Neo4j and the Neo4j browser
 
-How to build and run the project
+## How to Build and Run the Project
 
-1. Clone the project on to your machine and build it using maven
+1. Clone the project to your local machine using git or use gits download zip feature to get your own local copy.
 
-2. Copy application.properties to your preferable location
+2. Go in to the `GraphGenreator` directory and copy the `application.properties` from `src/main/java/graphgenerator/resources/` to a good location.
 
-3. Edit application.properties and specify the following
+3. Ensure you have a local SQL database setup (PostgreSQL is recommended and tested although the project should work with any Hibernate combatible database).  You'll need to know the connection details for the database including the server address, port, username and password.  GraphGenerator is set up to use a postgrsql database out of the box running on jdbc:postgresql://127.0.0.1:5432/ with a username of `graphgen` and passowrd of `demo234`.  You'll also need to create an empty database on the server manually called `nodes_rdbms_store`.
+
+3. Open the application.properties file using your favourite text editor.  Out of the box the GraphGenerator project is configured to use a series of directories in `/tmp/GraphGenerator/` and to communicate on a set of default ports.  The following options are ones you may wish to update for your particular setup:
 
 Database configuration: Configure your RDBMS details
 
@@ -49,17 +51,17 @@ Default pictures for each node category
 `pictures.theft = thief.png
 pictures.assault = knife.png`
 
-4. Run the built jar file making it use your edited properties file, by typing the follow in your terminal
+4. Build the GraphGeneraotr jar using maven:
+
+`mvn clean && mvn install`
+
+5. Run the built jar file making it use your edited properties file, by typing the follow in your terminal
 **java -jar GraphGenerator-0.1.0.jar --spring.config.location="your_prefered_path/application.propeties"**
 
-5. Clone [neo4j-browser](https://github.com/neo4j/neo4j-browser), follow the yarn build instructions.
+6. Download and install neo4j from the neo4j web site and install it.  Neo4j is available for Mac OS X, Windows and Linux.
 
-6. Copy **init.coffee** to this location, replacing the original.
-**/neo4j-browser/src/browser/modules/D3Visualization/lib/visualization/renders/init.coffee**
+7. Configure an empty neo4j database to use the directory specified in your application.properties file that you set up earlier.
 
-7. Copy **graphStyle.js** to this location, replacing the original.
-**/neo4j-browser/src/browser/modules/D3Visualization/**
+8. Run neo4j as a server.  Make sure the neo4j ports for bolt and other neo4j services are the same as configured in your application.properties file.
 
-8. Run Neo4j Browser by running "**yarn start**"
-
-9. When prompted for connection details for a Neo4j bolt use the details you specified in you application.properties and use neo4j/neo4j as the default username/password combination
+9. Direct your web browser to 127.0.0.1:<server.port> (The server port is the one configure in the application properties, the default is 8888).  This will present you with a data import wizard which will walk you through uploading a demo PDF of data (Not included with this project please contact D. Sykes) and then take you on to Neo4j so the data can viewed and manipulated.

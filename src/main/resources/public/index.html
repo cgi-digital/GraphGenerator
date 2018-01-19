@@ -1,15 +1,333 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Upload Test PDF</title>
+		<title>OCG Graph Project</title>
+		<link href="https://fonts.googleapis.com/css?family=Supermercado+One|Ubuntu|Ubuntu+Mono" rel="stylesheet">
+		<script
+  			src="https://code.jquery.com/jquery-3.2.1.min.js"
+  			integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+			  crossorigin="anonymous"></script>
+		<link rel="stylesheet"
+			  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+		<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+		<style>
+
+			* {
+				font-family: 'Ubuntu',sans-serif;
+			}
+
+			pre, code {
+				font-family: 'Ubuntu Mono', monospace;
+			}
+
+			body {
+				margin: 0;
+				padding: 0;
+				background-color: #fff;
+				color: #222;
+			}
+
+			h1 {
+				font-family: 'Supermercado One', sans-serif;
+				background-color: rgb(88,88, 88);
+				color: rgb(254,254,254);
+				font-size: 48pt;
+				padding: 0.4em;
+				margin: 0;
+				margin-bottom: 0.4em;
+			}
+			
+			#content {
+				margin-left: auto;
+				margin-right: auto;
+				width: 85%;
+			}
+
+			#data-view {
+				margin-top: 1em;
+				display: block;
+				width: 80%;
+				padding: 0px;
+				border: solid 1px #888888;
+				border-radius: 3px;
+				height: 400px;
+				overflow: scroll;
+			}
+
+			.step {
+				display: table-cell;
+				float: left;
+				height: 100px;
+				width: 100px;
+				border-radius: 100px;
+				font-size: 60pt;
+				background-color: #00f;
+				color: #fff;
+				text-align: center;
+				vertical-align: middle;
+				margin-right: 20px;
+				margin-top: 0.3em;
+			}
+
+			.step-content {
+				float: right;
+ 				width: 85%;
+			}
+
+			#guide {
+				position: absolute;
+				top: 40px;
+				right: 100px;
+			}
+
+			#guide hr {
+				display: inline-block;
+				width: 200px;
+				height: 15px;
+				color: #fff;
+				background-color: #fff;
+				margin-right: -211px;
+				margin-bottom: 4px;
+			}
+
+			.point {
+				display: inline-block;
+				color: rgb(88,88,88);
+				background-color: #fff;
+				border-radius: 49px;
+				margin-right: 30px;
+				padding: 13px;
+				font-size: 26pt;
+				width: 30px;
+				height: 30px;
+				text-align: center;
+				font-weight: 900;
+				line-height: 30px;
+			}
+
+			.active {
+				background-color: #00f;
+				color: #fff;
+			}
+
+		</style>
+
 	</head>
 	<body>
-		<h1>Upload PDF file</h1>
+		<h1>OCG Graph Demo</h1>
+		<div id="guide">
+				<hr>
+			<div class="point" id="point1">1</div>
+			<div class="point" id="point2">2</div>
+			<div class="point" id="point3">3</div>
+		</div>
+		<div id="content">
+			<div id="load">
+				<h2>Loading...</h2>
+				<p style="text-align: center">
+					<img src="images/spinner.svg" height="150" width="150">
+				</p>
+			</div>
+			<div id="step1">
+				<div class="step">1</div>
+				<div class="step-content">
+					<div class="step-title"><h2>Welcome</h2></div>
+					<div class="step-instruction">
+						<p>Welcome to the OCG Graph demo.  Currently there are <span class="rec-count">0</span>
+						records in the databsae.</p>
+						<p id="zero-count">In order to continue using this project you will need to be populate
+							the data the graph system needs. Please press continue to upload the demo PDF.
+						</p>
+						<p id="up-count">As there are records in the database you can skip the demo PDF upload
+							and move straight to viewing the graph data.  If you still wish to upload the demo
+							PDF please press the continue button.
+						</p>
+						<button class="to-step2">Continue</button>
+						<button class="to-step3">Skip upload</button>
+					</div>
+				</div>
+			</div>
+			
+			<div id="step2">
+				<div class="step">2</div>
+				<div class="step-content">
+					<div class="step-title"><h2>Upload PDF File</h2></div>
+					<div class="step-instruction">
+						<p>
+							To continue please uplaod the demo PDF file with the data which will be
+							used to populate the graph system.
+						</p>
+					</div>
+					<div id="form-wrapper">
+						<form id="upload-form" action="/import" method="post" enctype="multipart/form-data">
+							<label for="file">Filename:</label>
+							<input type="file" name="file" id="file" accept="application/pdf, .pdf" />
+							<input type="submit" name="submit" value="Submit" />
+						</form>
+						
+						<div id="upload-process">
+							<progress id="upload-progress"></progress><span id="upload-msg"></span>
+							<img src="images/spinner.svg" height="50" width="50">
+						</div>
 
-		<form action="http://localhost:8888/import" method="post" enctype="multipart/form-data">
-			<label for="file">Filename:</label>
-			<input type="file" name="file" id="file" />
-			<input type="submit" name="submit" value="Submit" />
-		</form>
+						<div id="upload-success">
+							<p>PDF data successfully uploaded.  New record count is
+								<span class="rec-count">0</span>.</p>
+							<input type="hidden" id="jsonData" name="jsondata" value="">
+							<button class="viewdata">View proecessed data (Json)</button>
+							<button class="to-step3">Continue</button>
+
+							<div id="data-view">
+								<pre><code id="jsonCode" class="json"></code></pre>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="step3">
+				<div class="step">3</div>
+				<div class="step-content">
+					<div class="step-title"><h2>Finish</h2></h3></div>
+					<div class="step-instruction">
+						<p>The Database been populated with <span class="rec-count">0</span> records.
+						You will now need to make sure Neo4j is running.  If it is you can just click
+						the continue button.</p>
+						<button id="to-neo">Continue to Neo4j</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<script type="text/javascript">
+
+			$('#step3').hide();
+			$('#step2').hide();
+			$('#step1').hide();
+			$('#file-spinner').hide();
+
+			// Update record counts and show appropriate content
+			setTimeout(function() {
+				$.ajax({
+					url: "/personcount",
+					success: function(data, textStatus, jqXHR) {
+						$('.rec-count').text(data.count);
+						if(data.count < 1) {
+							$('.to-step3').hide();
+							$('#up-count').hide();
+						} else {
+							$('#zero-count').hide();
+						}
+						$('#load').remove();
+						$('#point1').addClass("active");
+						$('#step1').show();
+					}
+				});
+			}, 4000);
+
+			$('.to-step2').click(function(event) {
+				$('#step1').hide();
+				$('#step2').show();
+				$('#step3').hide();
+				$('#upload-process').hide();
+				$('#upload-success').hide();
+				$('#data-view').hide();
+				$('#point1').removeClass("active");
+				$('#point3').removeClass("active");
+				$('#point2').addClass("active");
+			});
+
+			$('.to-step3').click(function(event) {
+				$.ajax({
+					url: "/personcount",
+					success: function(data, textStatus, jqXHR) {
+						$('.rec-count').text = data.count;
+						$.ajax({
+							url: "/property/neo4jVisualisationUrl",
+							success: function(data, textStatus, jqXHR) {
+								$('#step1').hide();
+								$('#step2').hide();
+								$('#step3').show();
+								$('#point1').removeClass("active");
+								$('#point3').addClass("active");
+								$('#point2').removeClass("active");
+								$('#to-neo').click(function(event) {
+									//alert("Redirecting to " + data.neo4jVisualisationUrl);
+									window.location = data.neo4jVisualisationUrl;
+								});
+							}
+						});
+					}
+				});
+			});
+
+			$('#upload-form').submit(function(event) {
+				event.preventDefault();
+				$('#upload-form').hide();
+				$('#upload-process').show();
+				$.ajax({
+					url: "/import",
+					type: "POST",
+					data: new FormData($('#upload-form')[0]),
+					cache: false,
+					contentType: false,
+					processData: false,
+					xhr: function() {
+						var processXhr = $.ajaxSettings.xhr();
+						if(processXhr.upload) {
+								processXhr.upload.addEventListener('progress', function(e) {
+									if(e.lengthComputable) {
+										$('#upload-progress').attr({
+											value: e.loaded,
+											max: e.total
+										});
+									}
+								}, false);
+								processXhr.upload.addEventListener('loadend', function(e) {
+									$('#upload-progress').hide();
+									$('#upload-msg').text("Processing...");
+									$('#upload-spinner').show();
+								}, false);
+						}
+						return processXhr;
+					},
+					success: function(data) {
+						$('#jsonData').val(JSON.stringify(data, null, 4));
+						$('#jsonCode').text(JSON.stringify(data, null, 4));
+						$('pre code').each(function(i, block) {
+							hljs.highlightBlock(block);
+						});
+						$('.viewdata').data("state","show");
+						$.ajax({
+							url: "/personcount",
+							success: function(data, textStatus, jqXHR) {
+								$('#upload-process').hide();
+								$('.rec-count').text(data.count);
+								$('#upload-form').hide();
+								$('#upload-msg').hide();
+								$('.to-step3').show();
+								$('#upload-success').show();
+							}
+						});
+					}
+				});
+			});
+
+			$('.viewdata').click(function(event) {
+				if($('.viewdata').data("state") == "show") {
+					$('#data-view').show();
+					$('.viewdata').data("state","hide");
+					$('.viewdata').text("Hide proecessed data (Json)");
+				} else {
+					$('#data-view').hide();
+					$('.viewdata').data("state","show");
+					$('.viewdata').text("View proecessed data (Json)");
+				}
+			});
+
+		</script>
 	</body>
 </html>

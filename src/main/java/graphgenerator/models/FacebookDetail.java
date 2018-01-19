@@ -40,4 +40,8 @@ public class FacebookDetail {
         return this.additionalFacebookPageInformation;
     }
 
+    public long getId() {
+        return id;
+    }
+
 }

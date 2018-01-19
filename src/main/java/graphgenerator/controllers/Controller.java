@@ -7,11 +7,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import graphgenerator.graph.GraphBuilderCypher;
 import graphgenerator.models.dao.PersonDAO;
+import graphgenerator.models.gsonsafe.JsonPerson;
 import graphgenerator.models.RawPersonProcessingException;
 import graphgenerator.models.Person;
 import graphgenerator.utilities.CrimeDeduplicator;
 import graphgenerator.utilities.SimplePersonList;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +21,9 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
@@ -44,6 +46,9 @@ public class Controller<Public>
     GraphBuilderCypher graphBuilder;
 
     @Autowired
+    private Environment env;
+
+    @Autowired
     CrimeDeduplicator crimeDeduplicator;
 
     private String neo4jVisualisationUrl;
@@ -54,9 +59,23 @@ public class Controller<Public>
     }
 
     @GetMapping("/person/{id}")
-    public String getPerson(@PathVariable Long id) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(persons.get(id));
+    public JsonPerson getPerson(@PathVariable Long id) {
+        return new JsonPerson(personDAO.findOne(id));
+    }
+
+    @GetMapping("/property/{key}")
+    public JsonObject getProperty(@PathVariable String key) {
+        String value = env.getProperty(key);
+        JsonObject property = new JsonObject();
+        property.addProperty(key, value);
+        return property;        
+    }
+
+    @GetMapping("/personcount")
+    public JsonObject getPersonCount() {
+        JsonObject count = new JsonObject();
+        count.addProperty("count", personDAO.findAll().size());
+        return count;
     }
 
     @DeleteMapping("/person/{id}")
@@ -67,20 +86,18 @@ public class Controller<Public>
     }
 
     @GetMapping("/person")
-    public String getAllPersons()
+    public SimplePersonList getAllPersons()
     {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        SimplePersonList simplePersons = new SimplePersonList(Controller.persons.values());
-        return gson.toJson(simplePersons);
+        SimplePersonList simplePersons = new SimplePersonList(personDAO.findAll());
+        return simplePersons;
     }
     
     @Modifying
     @Transactional
     @PostMapping("/import")
-    public String importPdf(@RequestParam("file") MultipartFile file) throws IOException  {
+    public List<JsonPerson> importPdf(@RequestParam("file") MultipartFile file) throws IOException  {
 
         logger.info("Importing records from the pdf document");
-
 
         PDDocument doc = PDDocument.load(file.getBytes());
         String docContent =  new PDFTextStripper().getText(doc);
@@ -102,7 +119,7 @@ public class Controller<Public>
             try
             {
                 Person person = Person.rawPersonFromPDFString("Name: " + personData[i].trim());
-                personDAO.save(person);
+                person = personDAO.save(person);
                 persons.put(person.getId(), person);
             } catch(RawPersonProcessingException e) {
                 logger.warn(e.getMessage());
@@ -113,12 +130,9 @@ public class Controller<Public>
 
         logger.info("Records imported successfully.");
 
-        return "{\"status\":\"done\"}";
-        //Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        //return gson.toJson(persons);
+        //return "{\"status\":\"done\"}";
+        return JsonPerson.fromUnsafeList(persons.values());
     }
-
-
 
     @RequestMapping(value = "/graph", method = RequestMethod.GET)
     public void buildGraph(HttpServletResponse httpServletResponse) throws IOException

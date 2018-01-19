@@ -20,6 +20,13 @@ public class SimplePersonList {
             this.persons.add(new SimplePerson(person.getId(), person.getName()));
     }
 
+    public int size() {
+        if(persons == null)
+            return 0;
+        
+        return persons.size();
+    }
+
     void add(long id, String name) {
         this.persons.add(new SimplePerson(id, name));
     }
